@@ -1,0 +1,35 @@
+Виртуальный хостинг Apache 
+Хостинг - размещение нескольких сайтов на одном физическом ресурсе (ПК).
+Виртуальный - сервер один, а обслуживает несколько сайтов; т.е. не в реальной сети, а в локальной петле.
+
+Реализация:
+1. Для каждого виртуального сайта создаем папки, традиционно, именя папок
+   совпадают с именем сайта (желательно, избегать в пути русских символов).
+	1.1. В каждой из папок создаем две под-папки:
+	     www (web / http / html / public) - для самого сайта
+	     log - для информации от сервера (создаем пустую)
+2. Конфигурация Apache
+	2.1. /conf/httpd.conf - раскомментируем или убеждаемся в наличии строки 
+	     Include conf/extra/httpd-vhosts.conf
+	2.2. /conf/extra/http-vhosts.conf
+	     Для каждого виртуального сайта создаем определение:
+<VirtualHost *:80> ## endpoint, вариация 127.0.0.1:80
+    ServerAdmin webmaster@localhost  ## требуется, выдается в составе ошибок
+    ServerName basics.local  ## URL сайта (Host: -заголовок)
+    ServerAlias www.basics.local  ## псевдоним
+    DocumentRoot "C:/Users/Pode_hr28/Desktop/php/basics.local/www"
+    ErrorLog "C:/Users/Pode_hr28/Desktop/php/basics.local/log/error.log"
+    CustomLog "C:/Users/Pode_hr28/Desktop/php/basics.local/log/access.log" common
+    <Directory "C:/Users/Pode_hr28/Desktop/php/basics.local/www">
+	AllowOverride All  ## переопределять конфигурации в каждой папке 
+        Require all granted  ## общий доступ (без авторизации)
+    </Directory>
+</VirtualHost>
+	2.3. Перезапустить Apache. В случае успеха он запустится и в подпапках log появятся файлы .log
+
+3. DNS - локальная маршрутизация
+	Открываем файл C:\Windows\System32\drivers\etc\hosts
+	Для каждого сайта и псевдонима добавляем маршрут.
+	 127.0.0.1 		 basics.local
+	 127.0.0.1 		 www.basics.local
+	     
