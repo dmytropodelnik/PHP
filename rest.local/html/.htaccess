@@ -1,0 +1,3 @@
+RewriteEngine On
+RewriteRule  ^home$  index.php?page=home [L,NC,QSA]
+RewriteRule  ^api$   api.php  		 [L,NC,QSA]
