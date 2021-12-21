@@ -13,6 +13,13 @@
         <button id="testPostButton">POST</button>
         <button id="testPutButton">PUT</button>
         <button id="testDeleteButton">DELETE</button>
+
+    <div style="border: 1px solid salmon; margin: 2vh 0; padding: 1">
+        <input type="file" name="userFile" />
+        <button id="filePostButton">POST</button>
+        <button id="filePutButton">PUT</button>
+    </div>
+
         <p id="out"></p>
         <hr/>
         <?php

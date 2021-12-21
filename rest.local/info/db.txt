@@ -1,0 +1,39 @@
+PHP MySQL - работа с БД
+1. Создаем БД и пользователя для неё
+ create database rest_local;
+ grant all privileges on rest_local.* to 'rest_user'@'localhost' identified by 'rest_pass';
+
+2. Файл с конфигурацией 
+(см. db_config.php)
+и его подключение
+
+
+-------------------------------
+MySQL / MariaDB
+mysqld - сервер (слушатель)
+mysql  - клиент (консоль)
+
+
+xampp			openserver
+mysqld (run)		mysql -> подключится к xampp (т.к. он запущен) 
+
+	workbench -> подключится к xampp
+
+отличительные особенности MySQL
+1. Наличие двух "движков" (Engine) - InnoDB, MyISAM
+    Движок действует на таблицу, разные таблицы - разные движки.
+2. Кодировка по умолчанию - Latin1.
+    Рекомендуется менять на UTF-8. Кодировка действует на 	
+    поле / таблицу. Есть глобальные определения, меняются
+    администратором. Рекомендуется указывать кодировку в 
+    командах создания таблиц.
+    А также указывать кодировку подключения.
+3. Более полная поддержка DDL (SHOW/DESCRIBE-команды)
+
+-----------------------------------------------------------------------
+HTML(page)	PHP(server)	MySQL(DBMS)	Data(field value)
+request ----------->connect------>select---------->|
+     <------------------<------------<-------------|
+
+<meta	        file->save(encoding)  --	DEFAULT CHARSET
+		        !! channel (socket) encoding !!

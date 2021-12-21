@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const testGetButton = document.querySelector("#testGetButton");
     if (!testGetButton) {
         throw "testGetButton not found";
@@ -26,13 +26,27 @@ document.addEventListener("DOMContentLoaded", function() {
     } else {
         testDeleteButton.onclick = testDelete;
     }
+
+    const filePostButton = document.querySelector("#filePostButton");
+    if (!filePostButton) {
+        throw "filePostButton not found";
+    } else {
+        filePostButton.onclick = filePost;
+    }
+
+    const filePutButton = document.querySelector("#filePutButton");
+    if (!filePutButton) {
+        throw "filePutButton not found";
+    } else {
+        filePutButton.onclick = filePut;
+    }
 });
 
 function testGet() {
     const out = document.querySelector("#out");
     if (!out) {
         throw "out not found";
-    } 
+    }
 
     fetch("/api?x=11&y=21")
         .then(r => r.text())
@@ -45,7 +59,7 @@ function testPost() {
     const out = document.querySelector("#out");
     if (!out) {
         throw "out not found";
-    } 
+    }
 
     fetch("/api", {
         method: "post",
@@ -53,8 +67,8 @@ function testPost() {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          "x": 10,
-          "y": 20,  
+            "x": 10,
+            "y": 20,
         })
     })
         .then(r => r.text())
@@ -79,9 +93,18 @@ function testPut() {
     const out = document.querySelector("#out");
     if (!out) {
         throw "out not found";
-    } 
+    }
 
-    fetch("/api")
+    fetch("/api", {
+        method: "put",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            "x": 15,
+            "y": 25,
+        })
+    })
         .then(r => r.text())
         .then(t => {
             out.innerText = t;
@@ -92,11 +115,70 @@ function testDelete() {
     const out = document.querySelector("#out");
     if (!out) {
         throw "out not found";
-    } 
+    }
 
-    fetch("/api")
+    fetch("/api", {
+        method: "delete",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            "x": 16,
+            "y": 26,
+        })
+    })
         .then(r => r.text())
         .then(t => {
             out.innerText = t;
         });
+}
+
+function filePost() {
+    const fileInput = document.querySelector("input[name=userFile]");
+    if (!fileInput) {
+        throw "input[name=userFile] not found";
+    }
+    if (fileInput.files.length == 0) {
+        alert("Select a file");
+        return;
+    }
+    const fd = new FormData();
+    fd.append("userFile", fileInput.files[0]);
+    fetch("/api/file", {
+        method: "post",
+        body: fd
+    })
+        .then(r => r.text())
+        .then(t => {
+            const out = document.getElementById("out");
+            if (!out) {
+                throw "out not found";
+            }
+            out.innerHTML = t;
+        })
+}
+
+function filePut() {
+    const fileInput = document.querySelector("input[name=userFile]");
+    if (!fileInput) {
+        throw "input[name=userFile] not found";
+    }
+    if (fileInput.files.length == 0) {
+        alert("Select a file");
+        return;
+    }
+    const fd = new FormData();
+    fd.append("userFile", fileInput.files[0]);
+    fetch("/api/file", {
+        method: "put",
+        body: fd
+    })
+        .then(r => r.text())
+        .then(t => {
+            const out = document.getElementById("out");
+            if (!out) {
+                throw "out not found";
+            }
+            out.innerHTML = t;
+        })
 }
