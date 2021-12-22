@@ -1,6 +1,7 @@
 <?php
-
-echo "API works";
+// turn off error/warning messages
+error_reporting(0);
+const LOG_FILE = "gallery_err.log";
 
 $method = strtoupper($_SERVER['REQUEST_METHOD']);
 
@@ -15,7 +16,31 @@ switch ($method) {
 
 function doGet()
 {
-    echo "GET works";
+    // DB inserting
+    $DB = connectDb();
+    if (is_string($DB)) {  // string - means error
+
+        // log error and exit
+        logError("Connection (GET): " . $DB);
+        sendError([
+            'code' => 507, # Insufficient Storage
+            'text' => "Internal error 1"
+        ]);
+    }
+    $query = "SELECT * FROM Gallery";
+    try {
+        $ans = $DB->query($query);
+    } catch (PDOException $ex) {
+        logError("Select(GET): " . $ex->getMessage() . " " . $query);
+        sendError([
+            'code' => 507, # Insufficient Storage
+            'text' => "Internal error 2"
+        ]);
+    }
+    echo json_encode(
+        $ans->fetchAll(PDO::FETCH_ASSOC),
+        JSON_UNESCAPED_UNICODE
+    );
 }
 
 function doPost()
@@ -27,27 +52,27 @@ function doPost()
     // Primary Validation:
     if (!isset($_POST['pictureDescription'])) {
         sendError([
-            'code' => 412,
+            'code' => 422, # Unprocessable Entity
             'text' => "Expected field: pictureDescription"
         ]);
     }
 
-    $dsecr = trim($_POST['pictureDescription']);
-    if (strlen($dsecr) < 2) {
+    $descr = trim($_POST['pictureDescription']);
+    if (strlen($descr) < 2) {
         sendError([
-            'code' => 412,
+            'code' => 422, # Unprocessable Entity
             'text' => "Content too short: pictureDescription"
         ]);
     }
     if (!isset($_FILES['pictureFile'])) {
         sendError([
-            'code' => 412,
+            'code' => 422, # Unprocessable Entity
             'text' => "Expected field(file): pictureFile"
         ]);
     }
     if ($_FILES['pictureFile']['size'] < 256) {
         sendError([
-            'code' => 412,
+            'code' => 422, # Unprocessable Entity
             'text' => "Content too short: pictureFile"
         ]);
     }
@@ -64,7 +89,7 @@ function doPost()
     if ($dot_pos === false) {
         // no dot in file name
         sendError([
-            'code' => 412,
+            'code' => 422, # Unprocessable Entity
             'text' => "Meta error: pictureFile should have extension"
         ]);
     }
@@ -79,10 +104,75 @@ function doPost()
         $saved_folder . $saved_name . $ext
     )) {
         sendError([
-            'code' => 409,
+            'code' => 507, # Insufficient Storage
             'text' => "File receiving error: pictureFile"
         ]);
     }
+    $fill_file_name = $saved_folder . $saved_name . $ext;
+    // DB inserting
+    $DB = connectDb();
+    if (is_string($DB)) {  // string - means error
 
-    echo $saved_name . $ext;
+        // delete uploaded file
+        unlink($fill_file_name);
+        // log error and exit
+        logError("Connection: " . $DB);
+        sendError([
+            'code' => 507, # Insufficient Storage
+            'text' => "Internal error 1"
+        ]);
+    }
+    // prepared queries
+    $sql = "INSERT INTO Gallery(id, filename, descr) VALUES(UUID_SHORT(), ?, ?)";
+    try {
+        $prep = $DB->prepare($sql);
+        $prep->execute([$saved_name . $ext, $descr]);
+    } catch (PDOException $ex) {
+        // delete uploaded file
+        unlink($fill_file_name);
+        // log error and exit
+        logError("Connection: " . $ex->getMessage() . " " . $sql);
+        sendError([
+            'code' => 507, # Insufficient Storage
+            'text' => "Internal error 2"
+        ]);
+        exit;
+    }
+
+    echo "Add OK";
+}
+
+function logError($err_text)
+{
+    $f = fopen(LOG_FILE, "a");
+    fwrite($f, date("r") . " " . $err_text . "\r\n");
+    fclose($f);
+}
+
+function connectDb()
+{
+    // include db configuration
+    unset($db_config);          // name from db_config.php file
+    @include "db_config.php";   // include with warning suppress
+    if (empty($db_config)) {    // include error
+        return "DB config read error";
+    }
+
+    // PDO technology
+    try {
+        $DB = new PDO(
+            // "mysql:host=localhost;port=3306;dbname=rest_local"
+            "{$db_config['type']}:"
+                . "host={$db_config['host']};"
+                . "port={$db_config['port']};"
+                . "dbname={$db_config['name']};"
+                . "charset={$db_config['char']}",
+            $db_config['user'],
+            $db_config['pass'],
+        );
+        $DB->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    } catch (PDOException $ex) {
+        return $ex->getMessage();
+    }
+    return $DB;
 }

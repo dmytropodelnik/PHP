@@ -13,6 +13,23 @@
             margin: 5px;
             padding: 5px;
         }
+        gallery {
+            display: block;
+            background-color: snow;
+        }
+        gallery .picture {
+            border: 1px solid salmon;
+            box-shadow: 5px 5px 2px #aaa;
+            display: inline-block;
+            margin: 1vw;
+            padding: 1vw;
+        }
+        gallery .picture img {
+            max-width: 20vw;
+        }
+        gallery .picture b {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -25,6 +42,10 @@
         <button name="addPicture">Добавить</button>
     </uploader>
 
+    <gallery>
+
+    </gallery>
+    
     <footer>
         <?php
             echo "&copy; ITSTEP, КН-П-181, 2018 - "

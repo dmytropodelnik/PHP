@@ -8,10 +8,8 @@ document.addEventListener("DOMContentLoaded", function () {
         throw "addPictureButton not found";
     }
     addPictureButton.addEventListener("click", addPictureClick);
-    
-    fetch("/api/gallery")
-        .then(r =>r.text())
-        .then(console.log);
+
+    loadGallery();
 });
 
 function addPictureClick(e) {
@@ -38,13 +36,47 @@ function addPictureClick(e) {
     const fd = new FormData();
     fd.append("pictureFile", picFile.files[0]);
     fd.append("pictureDescription", descr);
-    fetch("/api/gallery", { 
+    fetch("/api/gallery", {
         method: "post",
         headers: {
-            
+
         },
         body: fd
-     })
-    .then(r =>r.text())
-    .then(console.log);
+    })
+        .then(r => r.text())
+        .then(console.log);
+}
+
+function loadGallery() {
+    fetch("/api/gallery")
+        .then(r => r.text())
+        .then(showGallery);
+}
+
+function showGallery(t) {
+    const cont = document.querySelector("gallery");
+    if (!cont) {
+        throw "Gallery container not found";
+    }
+    try {
+        var j = JSON.parse(t);
+    } catch {
+        console.log("JSON parse error");
+        return;
+    }
+    const picTpl = `
+        <div class='picture'>
+            <img src='/pictures/{{filename}}' />
+            <b>{{moment}}</b>
+            <p>{{descr}}</p>
+        </div>
+    `;
+    var contHTML = "";
+    for (let pic of j) {
+        contHTML += picTpl
+            .replace("{{filename}}", pic.filename)
+            .replace("{{moment}}", pic.moment)
+            .replace("{{descr}}", pic.descr);
+    }
+    cont.innerHTML = contHTML;
 }

@@ -1,4 +1,4 @@
 RewriteEngine On
-RewriteRule  ^home$  	   index.php?page=home	[L,NC,QSA]
+RewriteRule  ^home$  	   index.php?page=home		[L,NC,QSA]
 RewriteRule  ^api/?(.*)$   api_router.php?dtl=$1  	[END,NC,QSA]
-RewriteRule  ^gallery$     gallery.php  	[END,NC,QSA]
+RewriteRule  ^gallery$     gallery.php  		[END,NC,QSA]
