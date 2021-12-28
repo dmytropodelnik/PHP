@@ -10,7 +10,151 @@ document.addEventListener("DOMContentLoaded", function () {
     addPictureButton.addEventListener("click", addPictureClick);
 
     loadGallery();
+    initPaginator();
+    initFilter();
+    initLangSwitch();
 });
+
+function initLangSwitch() {
+    const langSwitch = document.getElementById("langSwitch");
+    const langSelect = document.getElementById("langSelect");
+    const setLang = document.getElementById("setLang");
+    if (!langSwitch || !langSelect || !setLang)
+        throw "initLangSwitch - element(s) location error";
+    fetch("/api/gallery?langs").then(r => r.json())
+        .then(j => {
+            j.push("all");
+            for (let lang of j) {
+                let opt = document.createElement("option");
+                opt.value = lang;
+                opt.innerText = lang;
+                langSelect.appendChild(opt);
+            }
+
+            setLang.onclick = langChange;
+        });
+}
+function langChange() {
+    const opt = document.querySelector("#langSelect option:checked");
+    if (!opt) {
+        alert("Select lang before switching");
+        return;
+    }
+    loadGallery({ 'lang': opt.value });
+}
+
+function initFilter() {
+    const applyFilter = document.querySelector("#applyFilter");
+    if (!applyFilter) {
+        throw "applyFilter not found";
+    }
+    applyFilter.addEventListener("click", applyFilterClick);
+}
+function applyFilterClick() {
+    const datePicker = document.querySelector("#datePicker");
+    if (!datePicker) {
+        throw "datePicker not found";
+    }
+    const date = datePicker.value;
+    if (date.length === 0) {
+        alert("Select date to filter");
+        return;
+    }
+
+    const cont = document.querySelector("gallery");
+    if (!cont) {
+        throw "Gallery container not found";
+    }
+
+    let currentPage = cont.getAttribute("pageNumber");
+    currentPage = 1;
+    let currentPageSpan = document.querySelector("#currentPage");
+    currentPageSpan.innerText = currentPage;
+
+    loadGallery({ 'date': date });
+}
+
+function initPaginator() {
+    const prevButton = document.querySelector("#prevButton");
+    if (!prevButton) {
+        throw "prevButton not found";
+    }
+    prevButton.addEventListener("click", prevButtonClick);
+
+    const nextButton = document.querySelector("#nextButton");
+    if (!nextButton) {
+        throw "nextButton not found";
+    }
+    nextButton.addEventListener("click", nextButtonClick);
+
+}
+
+function prevButtonClick(e) {
+    const cont = document.querySelector("gallery");
+    if (!cont) {
+        throw "Gallery container not found";
+    }
+
+    let currentPage = cont.getAttribute("pageNumber");
+    if (currentPage > 1) {
+        currentPage--;
+
+        let currentPageSpan = document.querySelector("#currentPage");
+        currentPageSpan.innerText = currentPage;
+
+        const datePicker = document.querySelector("#datePicker");
+        if (!datePicker) {
+            throw "datePicker not found";
+        }
+        const date = datePicker.value;
+        if (date.length !== 0) {
+            loadGallery({ page: currentPage, date: date });
+            return;
+        }
+        loadGallery({ page: currentPage });
+    }
+}
+function nextButtonClick(e) {
+    const cont = document.querySelector("gallery");
+    if (!cont) {
+        throw "Gallery container not found";
+    }
+    let currentPage = cont.getAttribute("pageNumber");
+    let queryString = "";
+    const datePicker = document.querySelector("#datePicker");
+    if (!datePicker) {
+        throw "datePicker not found";
+    }
+    if (datePicker.value.length !== 0) {
+        queryString = "?" + "date=" + datePicker.value;
+    }
+
+    let lastPage;
+    fetch("/api/gallery" + queryString)
+        .then(r => r.json())
+        .then(r => {
+            lastPage = r.meta.lastPage;
+        })
+        .then(() => {
+            console.log(currentPage, lastPage);
+            console.log(queryString);
+            if (currentPage < lastPage) {
+                currentPage++;
+
+                if (currentPage > 1) {
+                    let currentPageSpan = document.querySelector("#currentPage");
+                    currentPageSpan.innerText = currentPage;
+                }
+
+                let date = datePicker.value;
+                if (date.length !== 0) {
+                    loadGallery({ page: currentPage, date: date });
+                    return;
+                }
+                loadGallery({ page: currentPage });
+            }
+        });
+}
 
 function addPictureClick(e) {
     const picFile = e.target.parentNode.querySelector("[name=pictureFile]");
@@ -18,24 +162,25 @@ function addPictureClick(e) {
         throw "picFile not found";
     }
 
-    const picDescr = e.target.parentNode.querySelector("[name=pictureDescription]");
-    if (!picDescr) {
-        throw "picDescr not found";
-    }
-
-    if (picFile.files.length === 0) {
+    if (picFile.files.length == 0) {
         alert("Выберите файл");
         return;
     }
-    const descr = picDescr.value.trim();
-    if (descr.length == 0) {
-        alert("Введите описание");
-        return;
-    }
-    //console.log(picFile.files[0], descr);
     const fd = new FormData();
     fd.append("pictureFile", picFile.files[0]);
-    fd.append("pictureDescription", descr);
+
+    for (let elem of [
+        "pictureDescriptionUk",
+        "pictureDescriptionEn",
+        "pictureDescriptionRu"
+    ]) {
+        let picDescr = e.target.parentNode.querySelector(`[name=${elem}]`);
+        if (!picDescr) {
+            throw `${elem} not found`;
+        }
+        fd.append(elem, picDescr.value);
+    }
+
     fetch("/api/gallery", {
         method: "post",
         headers: {
@@ -44,11 +189,28 @@ function addPictureClick(e) {
         body: fd
     })
         .then(r => r.text())
-        .then(console.log);
+        .then(() => {
+            const cont = document.querySelector("gallery");
+            if (!cont) {
+                throw "Gallery container not found";
+            }
+
+            let currentPage = cont.getAttribute("pageNumber");
+            loadGallery({ page: currentPage });
+        });
 }
 
-function loadGallery() {
-    fetch("/api/gallery")
+function loadGallery(params) {
+    let queryString = "";
+    if (typeof params == 'object') {
+        delimiter = "?";
+        for (let prop in params) {
+            queryString += delimiter + prop + "=" + params[prop];
+            delimiter = "&";
+        }
+    }
+
+    fetch("/api/gallery" + queryString)
         .then(r => r.text())
         .then(showGallery);
 }
@@ -58,10 +220,12 @@ function showGallery(t) {
     if (!cont) {
         throw "Gallery container not found";
     }
+    let j;
     try {
-        var j = JSON.parse(t);
+        j = JSON.parse(t);
     } catch {
         console.log("JSON parse error");
+        console.log(t);
         return;
     }
     const picTpl = `
@@ -72,11 +236,12 @@ function showGallery(t) {
         </div>
     `;
     var contHTML = "";
-    for (let pic of j) {
+    for (let pic of j.data) {
         contHTML += picTpl
             .replace("{{filename}}", pic.filename)
             .replace("{{moment}}", pic.moment)
             .replace("{{descr}}", pic.descr);
     }
     cont.innerHTML = contHTML;
+    cont.setAttribute("pageNumber", j.meta.page);
 }

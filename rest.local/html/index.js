@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const testPostButton = document.querySelector("#testPostButton");
-    if (!testPostButton) {
+    if (!testPostButton) { 
         throw "testPostButton not found";
     } else {
         testPostButton.onclick = testPost;
@@ -40,7 +40,107 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
         filePutButton.onclick = filePut;
     }
+
+    const localeUaButton = document.querySelector("#localeUaButton");
+    if (!localeUaButton) {
+        throw "localeUaButton not found";
+    } else {
+        localeUaButton.onclick = localeUaButtonClick;
+    }
+
+    const localeEnButton = document.querySelector("#localeEnButton");
+    if (!localeEnButton) {
+        throw "localeEnButton not found";
+    } else {
+        localeEnButton.onclick = localeEnButtonClick;
+    }
+
+    const localeRuButton = document.querySelector("#localeRuButton");
+    if (!localeRuButton) {
+        throw "localeRuButton not found";
+    } else {
+        localeRuButton.onclick = localeRuButtonClick;
+    }
+
+    const localeFrButton = document.querySelector("#localeFrButton");
+    if (!localeFrButton) {
+        throw "localeFrButton not found";
+    } else {
+        localeFrButton.onclick = localeFrButtonClick;
+    }
+
+    const noLocaleButton = document.querySelector("#noLocaleButton");
+    if (!noLocaleButton) {
+        throw "noLocaleButton not found";
+    } else {
+        noLocaleButton.onclick = noLocaleButtonClick;
+    }
 });
+
+function noLocaleButtonClick() {
+    fetch("/api/locale", {
+        method: "GET",
+        headers: {
+
+        }
+    })
+        .then(r => r.text())
+        .then(t => {
+            out.innerHTML = t;
+        });
+}
+
+function localeUaButtonClick() {
+    fetch("/api/locale", {
+        method: "GET",
+        headers: {
+            "Locale": "ua"
+        }
+    })
+        .then(r => r.text())
+        .then(t => {
+            out.innerHTML = t;
+        });
+}
+
+function localeEnButtonClick() {
+    fetch("/api/locale", {
+        method: "GET",
+        headers: {
+            "Locale": "en"
+        }
+    })
+        .then(r => r.text())
+        .then(t => {
+            out.innerHTML = t;
+        });
+}
+
+function localeRuButtonClick() {
+    fetch("/api/locale", {
+        method: "GET",
+        headers: {
+            "Locale": "ru"
+        }
+    })
+        .then(r => r.text())
+        .then(t => {
+            out.innerHTML = t;
+        });
+}
+
+function localeFrButtonClick() {
+    fetch("/api/locale", {
+        method: "GET",
+        headers: {
+            "Locale": "fr"
+        }
+    })
+        .then(r => r.text())
+        .then(t => {
+            out.innerHTML = t;
+        });
+}
 
 function testGet() {
     const out = document.querySelector("#out");
@@ -75,18 +175,6 @@ function testPost() {
         .then(t => {
             out.innerText = t;
         });
-
-    // fetch("/api", {
-    //     method: "post",
-    //     headers: {
-    //         "Content-Type": "application/x-www-form-urlencoded",
-    //     },
-    //     body: "x=10&y=20"
-    // })
-    //     .then(r => r.text())
-    //     .then(t => {
-    //         out.innerText = t;
-    //     });
 }
 
 function testPut() {
@@ -101,8 +189,8 @@ function testPut() {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            "x": 15,
-            "y": 25,
+            "x": 3,
+            "y": 4,
         })
     })
         .then(r => r.text())
@@ -123,8 +211,8 @@ function testDelete() {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            "x": 16,
-            "y": 26,
+            "x": 5,
+            "y": 6,
         })
     })
         .then(r => r.text())

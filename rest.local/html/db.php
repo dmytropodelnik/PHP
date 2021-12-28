@@ -14,7 +14,7 @@ try {
         "{$db_config['type']}:"
         . "host={$db_config['host']};"
         . "port={$db_config['port']};"
-        . "dbname={$db_config['name']};"
+        . "dbname={$db_config['name']};" 
         . "charset={$db_config['char']}",
         $db_config['user'],
         $db_config['pass'],

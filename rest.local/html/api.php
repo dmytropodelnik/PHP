@@ -33,7 +33,7 @@ function doGet() {
     }
     if (!isset($_GET['y'])) {
         send412("Parameter 'y' required.");  // exit inside send()
-    }
+    } 
     if (!is_numeric($_GET['y'])) {
         send412("Parameter 'y' shoudl be numeric.");  
     }

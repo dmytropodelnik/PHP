@@ -1,0 +1,76 @@
+Локализация. Передача данных через заголовки
+
+В работе API рассматриваются три классических способа 
+передачи данных:
+ - endpoint (url)
+ - тело (параметры) запроса
+ - заголовки запроса
+ 
+В качестве примера, рассмотрим передачу данных о 
+локализации (языке) через заголовок Locale
+
+В PHP все переданные заголовки запроса собираются в 
+массиве $_SERVER по ключам НТТР_заголовок (UPPERCASE, '-'=>'_')
+
+******
+Мультиязычность
+а) фиксированный - в таблицах есть несколько полей
+   VAL_RU, VAL_UA, VAL_EN
+   "+" - сразу видно что к чему относится, особенно, 
+     что отсутствует
+б) элластичный - отдельная таблица с языками, и таблица
+    литеральных значений под каждую сущность и язык
+   "+" - легко добавить новый язык
+
+CREATE TABLE Langs (
+	id        BIGINT     PRIMARY KEY,
+	iso639_1  CHAR(2)
+) ENGINE = InnoDB DEFAULT CHARSET = UTF8 ;
+
+CREATE TABLE Literals (
+	id        BIGINT     PRIMARY KEY,
+	id_lang   BIGINT,
+	id_entity BIGINT,
+	txt       TEXT 
+) ENGINE = InnoDB DEFAULT CHARSET = UTF8 ;
+
+INSERT INTO Langs VALUES (UUID_SHORT(), 'uk');
+INSERT INTO Langs VALUES (UUID_SHORT(), 'en');
+INSERT INTO Langs VALUES (UUID_SHORT(), 'ru');
+
+INSERT INTO Literals VALUES (UUID_SHORT(), 
+	( SELECT id FROM Langs WHERE iso639_1 = 'uk' ),
+	( SELECT id FROM Gallery LIMIT 1,1 ),
+	'Опис зображення 2' ) ;
+INSERT INTO Literals VALUES (UUID_SHORT(), 
+	( SELECT id FROM Langs WHERE iso639_1 = 'en' ),
+	( SELECT id FROM Gallery LIMIT 1,1 ),
+	'Picture 2 description' ) ;	
+INSERT INTO Literals VALUES (UUID_SHORT(), 
+	( SELECT id FROM Langs WHERE iso639_1 = 'ru' ),
+	( SELECT id FROM Gallery LIMIT 1,1 ),
+	'Про изображение 2' ) ;	
+
+	
+SELECT 
+	G.id,
+	G.filename,
+	G.moment,
+	A.iso639_1,
+	L.txt 
+FROM 
+	Gallery G 
+	JOIN Literals L ON L.id_entity = G.id
+	JOIN Langs A ON L.id_lang = A.id
+WHERE 
+	( CAST(moment AS DATE) = '2021-12-27' )
+	AND (iso639_1 = 'en');
+------------------------------------------------------
+SELECT 
+	COUNT( DISTINCT G.id )
+FROM 
+	Gallery G 
+	JOIN Literals L ON L.id_entity = G.id
+	JOIN Langs A ON L.id_lang = A.id
+WHERE 
+	( CAST(moment AS DATE) = '2021-12-27' )
