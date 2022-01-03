@@ -1,0 +1,55 @@
+Фильтрация, "группировка"
+
+Группировка:
+Идея: у одной сущности есть несколько свойств,
+например, в одном чеке - несколько товаров,
+в одном отделе - несколько сотрудников,
+у одной картины - несколько описаний.
+Задача: сгруппировать свойства:
+[ { entity_name1: [prop1, prop2, prop3] },
+  { entity_name2: [ prop4, prop5 ] } ]
+Проблема: SQL позволяет группировать, но только с агрегатными функциями 
+[{ entity_name1: 3 }, { entity_name4 }]
+Решения: 
+а) "N+1" 1. Запрос на сущности (SELECT DISTINCT entity)
+	 2-N+1. Запросы на свойства (SELECT props WHERE entity=...)
+б) Алгоритмическая: получаем ответ SQL с повторами сущностей
+   формируем массивы программно. 
+-------------------------
+SELECT
+    G.id,
+    A.iso639_1,
+    L.txt
+FROM
+    Gallery G
+    JOIN Literals L ON L.id_entity = G.id
+    JOIN Langs A ON L.id_lang = A.id;
+
+=>
+{ id: { 'uk':"...", "en":"...",   "ru": "..."}
+}
+------------------------------------------------
+Коррекция пагинации
+ограничение на кол-во накладывается на id картинок
+SELECT
+    DISTINCT G.id
+FROM
+    Gallery G
+    JOIN Literals L ON L.id_entity = G.id
+    JOIN Langs A ON L.id_lang = A.id
+LIMIT
+    0, 4
+
+затем, при выборке описаний, накладывается условие 
+на отобранные id:
+
+SELECT
+        G.id,
+	G.filename,
+	G.moment,
+	A.iso639_1,
+	L.txt AS descr
+FROM 
+	Gallery G 
+	JOIN Literals L ON L.id_entity = G.id
+	JOIN Langs A ON L.id_lang = A.id

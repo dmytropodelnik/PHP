@@ -223,6 +223,10 @@ function showGallery(t) {
     let j;
     try {
         j = JSON.parse(t);
+//console.log(j); return;
+        if (j.warn.length != 0) {  // show warnings if exist
+            console.log(j.warn);
+        }
     } catch {
         console.log("JSON parse error");
         console.log(t);
@@ -236,11 +240,17 @@ function showGallery(t) {
         </div>
     `;
     var contHTML = "";
-    for (let pic of j.data) {
+    for (let picId in j.data) {
+// console.log(picId, j.data[picId]); continue;
+        let descr = "";
+        for (let lang in j.data[picId].descr) {
+            descr += lang + ":" 
+            + j.data[picId].descr[lang] + "<br/>";
+        }
         contHTML += picTpl
-            .replace("{{filename}}", pic.filename)
-            .replace("{{moment}}", pic.moment)
-            .replace("{{descr}}", pic.descr);
+            .replace("{{filename}}", j.data[picId].filename)
+            .replace("{{moment}}", j.data[picId].moment)
+            .replace("{{descr}}", descr);
     }
     cont.innerHTML = contHTML;
     cont.setAttribute("pageNumber", j.meta.page);

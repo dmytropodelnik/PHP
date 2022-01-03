@@ -155,6 +155,7 @@ function doGet()
         'total'     => null,
         'filters'   => $filters,
     ];
+    /////////////// Total ID in gallery
     $query = "
 	SELECT 
 		COUNT( DISTINCT G.id )
@@ -177,7 +178,39 @@ function doGet()
     if ($page > $meta['lastPage'] and $page > 1) {
         $warn['data'] = "Page number exceeded last page";
     }
+    /////////////////////// Limited IDs
+    $query = "
+	SELECT 
+		DISTINCT G.id
+	FROM 
+		Gallery G 
+		JOIN Literals L ON L.id_entity = G.id
+		JOIN Langs A ON L.id_lang = A.id
+	" . $filter_part
+      . $pagination_part;
+    try {
+        $ids = array();
+        $ans = $DB->query($query);
+        while ($row = $ans->fetch(PDO::FETCH_NUM)) {
+            $ids[] = $row[0];
 
+        }
+    } catch (PDOException $ex) {
+        logError("Select LIMIT(GET): " . $ex->getMessage() . " " . $query);
+        sendError([
+            'code' => 500,
+            'text' => "Internal error 4"
+        ]);
+    }
+    //////////////////////// WHERE clause for paginator
+    $paginaton_part = "";
+    if (strlen($filter_part) > 3) {  // WHERE in $filter_part
+        $pagination_part .= " AND ";
+    }
+    else {  // $filter_part is empty or space only
+        $pagination_part .= " WHERE ";
+    }
+    $pagination_part .= "G.id IN ( " . implode(',', $ids) . " ) ";
     // 5. Data 
     $query = "
 	SELECT
@@ -193,8 +226,26 @@ function doGet()
 	" . $filter_part
         . $pagination_part;
     // echo $query ; exit ;
+    $res = array();
     try {
         $ans = $DB->query($query);
+        // $res = $ans->fetchAll(PDO::FETCH_ASSOC);
+        while ($row = $ans->fetch(PDO::FETCH_ASSOC)) {
+            if (isset($res[$row['id']])) {
+                $res[$row['id']]
+                    ['descr']
+                    [$row['iso639_1']] = $row['descr'];
+            }
+            else {
+                $res[$row['id']] = [
+                    'filename' => $row['filename'],
+                    'moment' => $row['moment'],
+                    'descr' => [
+                        $row['iso639_1'] => $row['descr']
+                    ]
+                ];
+            }
+        }
     } catch (PDOException $ex) {
         logError("Select(GET): " . $ex->getMessage() . " " . $query);
         sendError([
@@ -205,7 +256,7 @@ function doGet()
     echo json_encode(
         [
             'meta' => $meta,
-            'data' => $ans->fetchAll(PDO::FETCH_ASSOC),
+            'data' => $res,
             'warn' => $warn,
         ],
         JSON_UNESCAPED_UNICODE
