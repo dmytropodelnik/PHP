@@ -33,6 +33,7 @@ function initLangSwitch() {
                 opt.innerText = lang;
                 langSelect.appendChild(opt);
             }
+            langSelect.options[3].selected = true;
             setLang.onclick = langChange;
         });
 }

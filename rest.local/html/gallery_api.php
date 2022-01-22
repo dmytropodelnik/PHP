@@ -85,29 +85,31 @@ function doGet()
 			'text' => "Invalid date format. YYYY-MM-DD only" ] ) ;
 		}
 	}
-    // 3. WHERE clauses
-    $first_clause = true;
-    $filter_part = " ";
-    // lang
-    if (isset($filters['lang'])) {
-        if ($first_clause) {
-            $filter_part .= " WHERE ";
-            $first_clause = false;
-        } else {
-            $filter_part .= " AND ";
-        }
-        $filter_part .= " ( iso639_1 = '{$filters['lang']}' ) ";
-    }
-    // date
-    if (isset($filters['date'])) {
-        if ($first_clause) {
-            $filter_part .= " WHERE ";
-            $first_clause = false;
-        } else {
-            $filter_part .= " AND ";
-        }
-        $filter_part .= " ( CAST(moment AS DATE) = '$date' ) ";
-    }
+	// 3. WHERE clauses
+	$first_clause = true ;
+	$filter_part = " " ;
+	// lang
+	if( isset( $filters[ 'lang' ] ) ) {
+		if( $first_clause ) { 
+			$filter_part .= " WHERE " ;
+			$first_clause = false ;
+		}
+		else {
+			$filter_part .= " AND " ;
+		}
+		$filter_part .= " ( iso639_1 = '{$filters[ 'lang' ]}' ) " ;
+	}
+	// date
+	if( isset( $filters[ 'date' ] ) ) {
+		if( $first_clause ) { 
+			$filter_part .= " WHERE " ;
+			$first_clause = false ;
+		}
+		else {
+			$filter_part .= " AND " ;
+		}
+		$filter_part .= " ( CAST(moment AS DATE) = '$date' ) " ;
+	}
 
     // Pagination 
     // 1. Default values:
@@ -218,7 +220,7 @@ function doGet()
     "G.id IN ( " 
     . implode( ',', $ids ) 
     . " ) " ;
-    // 5. Data 
+	// 5. Data
 	$query = "
 	SELECT 
 		G.id,
@@ -232,7 +234,7 @@ function doGet()
 		JOIN Langs A ON L.id_lang = A.id
 	" . $filter_part 
 	  . $pagination_part ;
-    // echo $query ; exit ;
+    // echo $pagination_part ; exit ;
     $res = array() ;
 	try {
 		$ans = $DB->query( $query ) ;
