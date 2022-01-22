@@ -66,9 +66,13 @@ function initFilter() {
     resetFilter.addEventListener("click", resetFilterClick);
 }
 
+function unsetDateFilter() {
+
+}
+
 function resetFilterClick() {
+    unsetDateFilter();
     unsetLanguage();
-    
 }
 
 function applyFilterClick() {
@@ -92,7 +96,20 @@ function applyFilterClick() {
     let currentPageSpan = document.querySelector("#currentPage");
     currentPageSpan.innerText = currentPage;
 
-    loadGallery({ 'date': date });
+    const opt = document.querySelector("#langSelect option:checked");
+    if (!opt) {
+        alert("Select lang before switching");
+        return;
+    }
+
+    let langValue = opt.value;
+
+    let params = (new URL(document.location)).searchParams; 
+    if (params.get("lang") === "all") {
+        langValue = "all";
+    }
+
+    loadGallery({ 'date': date, 'lang': langValue });
 }
 
 function initPaginator() {
