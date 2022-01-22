@@ -64,6 +64,7 @@
     <div id="langSwitch">
         <select id="langSelect"></select>
         <button id="setLang">Set</button>
+        <button id="unsetLang">Unset</button>
     </div>
 
     <footer>

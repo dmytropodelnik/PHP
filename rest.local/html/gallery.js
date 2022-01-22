@@ -19,8 +19,11 @@ function initLangSwitch() {
     const langSwitch = document.getElementById("langSwitch");
     const langSelect = document.getElementById("langSelect");
     const setLang = document.getElementById("setLang");
-    if (!langSwitch || !langSelect || !setLang)
+    const unsetLang = document.getElementById("unsetLang");
+    if (!langSwitch || !langSelect || !setLang || !unsetLang) {
         throw "initLangSwitch - element(s) location error";
+    }
+    unsetLang.onclick = unsetLanguage;
     fetch("/api/gallery?langs").then(r => r.json())
         .then(j => {
             j.push("all");
@@ -30,10 +33,16 @@ function initLangSwitch() {
                 opt.innerText = lang;
                 langSelect.appendChild(opt);
             }
-
             setLang.onclick = langChange;
         });
 }
+
+function unsetLanguage() {
+    const langSelect = document.getElementById("langSelect");
+    langSelect[3].selected = true;
+    loadGallery();
+}
+
 function langChange() {
     const opt = document.querySelector("#langSelect option:checked");
     if (!opt) {
@@ -101,6 +110,13 @@ function prevButtonClick(e) {
         return;
     }
 
+    let langValue = opt.value;
+
+    let params = (new URL(document.location)).searchParams; 
+    if (params.get("lang") === "all") {
+        langValue = "all";
+    }
+
     let currentPage = cont.getAttribute("pageNumber");
     if (currentPage > 1) {
         currentPage--;
@@ -114,10 +130,10 @@ function prevButtonClick(e) {
         }
         const date = datePicker.value;
         if (date.length !== 0) {
-            loadGallery({ page: currentPage, date: date, lang: opt.value });
+            loadGallery({ page: currentPage, date: date, lang: langValue });
             return;
         }
-        loadGallery({ page: currentPage, lang: opt.value });
+        loadGallery({ page: currentPage, lang: langValue });
     }
 }
 function nextButtonClick(e) {
@@ -140,6 +156,12 @@ function nextButtonClick(e) {
         alert("Select lang before switching");
         return;
     }
+    let langValue = opt.value;
+
+    let params = (new URL(document.location)).searchParams; 
+    if (params.get("lang") === "all") {
+        langValue = "all";
+    }
 
     let lastPage;
     fetch("/api/gallery" + queryString)
@@ -160,10 +182,10 @@ function nextButtonClick(e) {
 
                 let date = datePicker.value;
                 if (date.length !== 0) {
-                    loadGallery({ page: currentPage, date: date, lang: opt.value });
+                    loadGallery({ page: currentPage, date: date, lang: langValue });
                     return;
                 }
-                loadGallery({ page: currentPage, lang: opt.value });
+                loadGallery({ page: currentPage, lang: langValue });
             }
         });
 }

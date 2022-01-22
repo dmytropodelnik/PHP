@@ -61,8 +61,12 @@ function doGet()
     // TODO: 1. Is lang in request? 2. Is lang valid? 3. Form WHERE clause
     if (isset($_GET['lang'])) {  // 1.
         $lang = strtolower($_GET['lang']);
-        if (in_array($lang, $_Page['langs'])) {  // 2.
-            $filters['lang'] = $lang;
+        if (in_array($lang, $_Page['langs']) || $lang === "all") {  // 2.
+            if ($lang === "all") {
+                unset($lang);
+            } else {
+                $filters['lang'] = $lang;
+            }    
         } else {
             $warn['lang'] = "Language does not support";
             unset($lang);
