@@ -95,6 +95,12 @@ function prevButtonClick(e) {
         throw "Gallery container not found";
     }
 
+    const opt = document.querySelector("#langSelect option:checked");
+    if (!opt) {
+        alert("Select lang before switching");
+        return;
+    }
+
     let currentPage = cont.getAttribute("pageNumber");
     if (currentPage > 1) {
         currentPage--;
@@ -108,10 +114,10 @@ function prevButtonClick(e) {
         }
         const date = datePicker.value;
         if (date.length !== 0) {
-            loadGallery({ page: currentPage, date: date });
+            loadGallery({ page: currentPage, date: date, lang: opt.value });
             return;
         }
-        loadGallery({ page: currentPage });
+        loadGallery({ page: currentPage, lang: opt.value });
     }
 }
 function nextButtonClick(e) {
@@ -127,6 +133,12 @@ function nextButtonClick(e) {
     }
     if (datePicker.value.length !== 0) {
         queryString = "?" + "date=" + datePicker.value;
+    }
+
+    const opt = document.querySelector("#langSelect option:checked");
+    if (!opt) {
+        alert("Select lang before switching");
+        return;
     }
 
     let lastPage;
@@ -148,10 +160,10 @@ function nextButtonClick(e) {
 
                 let date = datePicker.value;
                 if (date.length !== 0) {
-                    loadGallery({ page: currentPage, date: date });
+                    loadGallery({ page: currentPage, date: date, lang: opt.value });
                     return;
                 }
-                loadGallery({ page: currentPage });
+                loadGallery({ page: currentPage, lang: opt.value });
             }
         });
 }
@@ -162,7 +174,7 @@ function addPictureClick(e) {
         throw "picFile not found";
     }
 
-    if (picFile.files.length == 0) {
+    if (picFile.files.length == 0) { 
         alert("Выберите файл");
         return;
     }

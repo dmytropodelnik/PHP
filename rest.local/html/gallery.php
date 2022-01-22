@@ -54,7 +54,7 @@
         <button id="prevButton">Prev</button>
         <span id="currentPage">1</span>
         <button id="nextButton">Next</button>
-    </paginator>
+    </paginator> 
     <div id="dataFilter">
         <input type="date" id="datePicker" />
         <br />
