@@ -58,7 +58,19 @@ function initFilter() {
         throw "applyFilter not found";
     }
     applyFilter.addEventListener("click", applyFilterClick);
+
+    const resetFilter = document.querySelector("#resetFilters");
+    if (!resetFilter) {
+        throw "resetFilter not found";
+    }
+    resetFilter.addEventListener("click", resetFilterClick);
 }
+
+function resetFilterClick() {
+    unsetLanguage();
+    
+}
+
 function applyFilterClick() {
     const datePicker = document.querySelector("#datePicker");
     if (!datePicker) {

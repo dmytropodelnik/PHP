@@ -67,6 +67,10 @@
         <button id="unsetLang">Unset</button>
     </div>
 
+    <div>
+        <button id="resetFilters">Reset filters</button>
+    </div>
+
     <footer>
         <?php
         echo "&copy; ITSTEP, КН-П-181, 2018 - "
