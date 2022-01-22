@@ -202,19 +202,22 @@ function doGet()
             'text' => "Internal error 4"
         ]);
     }
-    //////////////////////// WHERE clause for paginator
-    $paginaton_part = "";
-    if (strlen($filter_part) > 3) {  // WHERE in $filter_part
-        $pagination_part .= " AND ";
-    }
-    else {  // $filter_part is empty or space only
-        $pagination_part .= " WHERE ";
-    }
-    $pagination_part .= "G.id IN ( " . implode(',', $ids) . " ) ";
+	///////////////// WHERE clause for paginator
+	$pagination_part = "" ;
+	if( strlen( $filter_part ) > 3 ) {  // WHERE in $filter_part
+		$pagination_part .= " AND " ;
+	}
+	else {  // $filter_part  is empty or space only
+		$pagination_part .= " WHERE " ;
+	}
+    $pagination_part .= 
+    "G.id IN ( " 
+    . implode( ',', $ids ) 
+    . " ) " ;
     // 5. Data 
-    $query = "
-	SELECT
-        G.id,
+	$query = "
+	SELECT 
+		G.id,
 		G.filename,
 		G.moment,
 		A.iso639_1,
@@ -223,43 +226,43 @@ function doGet()
 		Gallery G 
 		JOIN Literals L ON L.id_entity = G.id
 		JOIN Langs A ON L.id_lang = A.id
-	" . $filter_part
-        . $pagination_part;
+	" . $filter_part 
+	  . $pagination_part ;
     // echo $query ; exit ;
-    $res = array();
-    try {
-        $ans = $DB->query($query);
-        // $res = $ans->fetchAll(PDO::FETCH_ASSOC);
-        while ($row = $ans->fetch(PDO::FETCH_ASSOC)) {
-            if (isset($res[$row['id']])) {
-                $res[$row['id']]
-                    ['descr']
-                    [$row['iso639_1']] = $row['descr'];
-            }
-            else {
-                $res[$row['id']] = [
-                    'filename' => $row['filename'],
-                    'moment' => $row['moment'],
-                    'descr' => [
-                        $row['iso639_1'] => $row['descr']
-                    ]
-                ];
-            }
-        }
-    } catch (PDOException $ex) {
-        logError("Select(GET): " . $ex->getMessage() . " " . $query);
-        sendError([
-            'code' => 507, # Insufficient Storage
-            'text' => "Internal error 2"
-        ]);
-    }
-    echo json_encode(
-        [
-            'meta' => $meta,
-            'data' => $res,
-            'warn' => $warn,
-        ],
-        JSON_UNESCAPED_UNICODE
+    $res = array() ;
+	try {
+		$ans = $DB->query( $query ) ;
+		// $res = $ans->fetchAll( PDO::FETCH_ASSOC ) ;
+		while( $row = $ans->fetch( PDO::FETCH_ASSOC ) ) {
+			if( isset( $res[ $row[ 'id' ] ] ) ) {
+				$res[ $row[ 'id' ] ]
+					[ 'descr' ]
+					[ $row[ 'iso639_1' ] ] = $row[ 'descr' ] ;
+			}
+			else {
+				$res[ $row[ 'id' ] ] = [
+					'filename' => $row[ 'filename' ],
+					'moment'   => $row[ 'moment' ],
+					'descr' => [
+						$row[ 'iso639_1' ] => $row[ 'descr' ]
+					]
+				] ;
+			}
+		}
+	}
+	catch( PDOException $ex ) {
+		logError( "Select(GET): " . $ex->getMessage() . " " . $query ) ;
+		sendError( [
+			'code' => 507,  # Insufficient Storage
+			'text' => "Internal error 2" ] ) ;
+	}
+	echo json_encode(
+		[
+			'meta' => $meta,
+			'data' => $res,
+			'warn' => $warn
+		],
+		JSON_UNESCAPED_UNICODE
     );
 }
 
