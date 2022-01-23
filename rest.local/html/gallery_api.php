@@ -216,10 +216,15 @@ function doGet()
 	else {  // $filter_part  is empty or space only
 		$pagination_part .= " WHERE " ;
 	}
-    $pagination_part .= 
-    "G.id IN ( " 
-    . implode( ',', $ids ) 
-    . " ) " ;
+    if (count($ids) > 0) {
+        $pagination_part .= 
+        "G.id IN ( " 
+        . implode( ',', $ids ) 
+        . " ) " ;
+    }
+    else {
+        $pagination_part = mb_substr($pagination_part, 0, strripos($pagination_part, "AND") );
+    }
 	// 5. Data
 	$query = "
 	SELECT 
@@ -234,7 +239,7 @@ function doGet()
 		JOIN Langs A ON L.id_lang = A.id
 	" . $filter_part 
 	  . $pagination_part ;
-    // echo $pagination_part ; exit ;
+    // echo $query; exit ;
     $res = array() ;
 	try {
 		$ans = $DB->query( $query ) ;
