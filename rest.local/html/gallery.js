@@ -41,6 +41,7 @@ function initLangSwitch() {
 function unsetLanguage() {
     const langSelect = document.getElementById("langSelect");
     langSelect[3].selected = true;
+    resetPageNumber();
     loadGallery();
 }
 
@@ -50,6 +51,7 @@ function langChange() {
         alert("Select lang before switching");
         return;
     }
+    resetPageNumber();
     loadGallery({ 'lang': opt.value });
 }
 
@@ -68,11 +70,27 @@ function initFilter() {
 }
 
 function unsetDateFilter() {
+    const datePicker = document.querySelector("#datePicker");
+    if (!datePicker) {
+        throw "datePicker not found";
+    }
+    datePicker.value = null;
+}
 
+function resetPageNumber() {
+    const cont = document.querySelector("gallery");
+    if (!cont) {
+        throw "Gallery container not found";
+    }
+    // let currentPage = cont.getAttribute("pageNumber");
+    cont.setAttribute("pageNumber", 1);
+    let currentPageSpan = document.querySelector("#currentPage");
+    currentPageSpan.innerText = 1;
 }
 
 function resetFilterClick() {
     unsetDateFilter();
+    resetPageNumber();
     unsetLanguage();
 }
 
@@ -109,7 +127,7 @@ function applyFilterClick() {
     if (params.get("lang") === "all") {
         langValue = "all";
     }
-
+    resetPageNumber();
     loadGallery({ 'date': date, 'lang': langValue });
 }
 
@@ -259,8 +277,8 @@ function addPictureClick(e) {
                 throw "Gallery container not found";
             }
 
-            let currentPage = cont.getAttribute("pageNumber");
-            loadGallery({ page: currentPage });
+            resetPageNumber();
+            loadGallery();
         });
 }
 
